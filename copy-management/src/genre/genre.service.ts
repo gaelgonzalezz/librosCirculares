@@ -9,8 +9,9 @@ export class GenreService {
 
   create(createGenreDto: CreateGenreDto) {
     const newGenre = new Genre();
-    newGenre.name = createGenreDto.name;
     newGenre.id = Math.random();
+    newGenre.name = createGenreDto.name;
+    
     this.genres.push(newGenre);
 
     return newGenre.id;
@@ -21,11 +22,15 @@ export class GenreService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} genre`;
+    const genre = this.genres.find((g) => g.id == id)
+    if(!genre){
+      throw new NotFoundException();
+    }
+    return genre
   }
 
   update(id: number, updateGenreDto: UpdateGenreDto) {
-    const genre = this.genres.find(g => g.id == id)
+    const genre = this.genres.find((g) => g.id == id)
     if(!genre){
       throw new NotFoundException();
     }
