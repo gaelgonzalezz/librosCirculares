@@ -1,4 +1,2 @@
-# Libros-Circulares
-
-Repositorio multiproyecto dedicado al trabajo práctico "Libros Circulares" de Desarrollo de Software I, Camara Alemana.
 # librosCirculares
+Repositorio multiproyecto del trabajo practico "Libros Circulares" de la AHK.
