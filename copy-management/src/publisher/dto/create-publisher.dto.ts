@@ -1,1 +1,3 @@
-export class CreatePublisherDto {}
+export class CreatePublisherDto {
+    name: string;
+}
