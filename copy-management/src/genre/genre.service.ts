@@ -34,7 +34,10 @@ export class GenreService {
     if(!genre){
       throw new NotFoundException();
     }
-    genre.name = updateGenreDto.name
+
+    if(updateGenreDto.name){
+      genre.name = updateGenreDto.name
+    }
   }
 
   remove(id: number) {

@@ -26,10 +26,10 @@ export class AuthorService {
 
   findOne(id: number) {
     const author = this.authors.find((a) => a.id == id)
-        if(!author){
-          throw new NotFoundException();
-        }
-        return author
+    if(!author){
+      throw new NotFoundException();
+    }
+    return author
   }
 
   update(id: number, updateAuthorDto: UpdateAuthorDto) {
@@ -37,10 +37,22 @@ export class AuthorService {
     if(!author){
       throw new NotFoundException();
     }
-    author.name = updateAuthorDto.name;
-    author.lastName = updateAuthorDto.lastName;
-    author.nationality = updateAuthorDto.nationality;
-    author.residency = updateAuthorDto.residency;
+
+    if(updateAuthorDto.name){
+      author.name = updateAuthorDto.name;
+    }
+    
+    if(updateAuthorDto.lastName){
+      author.lastName = updateAuthorDto.lastName;
+    }
+    
+    if(updateAuthorDto.nationality){
+      author.nationality = updateAuthorDto.nationality;
+    }
+
+    if(updateAuthorDto.residency){
+      author.residency = updateAuthorDto.residency;
+    }
   }
 
   remove(id: number) {
