@@ -12,7 +12,6 @@ export class BookService {
 
   }
 
-
   books: Book[] = [];
 
   create(createBookDto: CreateBookDto) {
@@ -36,10 +35,10 @@ export class BookService {
 
   findOne(id: number) {
     const books = this.books.find((b) => b.id == id)
-        if(!books){
-          throw new NotFoundException();
-        }
-        return books
+    if(!books){
+      throw new NotFoundException();
+    }
+    return books
   }
 
   update(id: number, updateBookDto: UpdateBookDto) {
