@@ -95,7 +95,7 @@
         Alta de persona en comunidad.
         Baja de persona en comunidad.
 
-    ##Casos borders
+    ##Casos border
         Se puede modificar la persona que esta a cargo (representante/responsable).
         Se rechaza el ingreso de una nueva persona si el DNI coincide con alguno ya existente.
         Se rechaza la carga de un metodo de contacto si coincide con alguno ya existente y NO es el de un responsable.

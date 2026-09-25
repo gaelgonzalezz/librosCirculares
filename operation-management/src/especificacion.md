@@ -74,10 +74,10 @@ Este servicio implementa la gestión de todo el ciclo de operaciones sobre los e
 type TipoOperacion = 'PRESTAMO' | 'DEVOLUCION' | 'CESION' | 'BAJA';
 type EstadoOperacion = 'ABIERTA' | 'CERRADA';
 
-interface Operacion {
+class Operacion {
   id: number;
-  tipo: TipoOperacion;
-  ejemplarId: number;
+  tipo: TipoOperacion; //esto es un enum
+  ejemplarId: number; 
   comunidadId: number;
   personaOrigenId: number; // Quien entrega / transfiere / da de baja
   personaDestinoId?: number; // Quien recibe (en PRESTAMO y CESION)
@@ -400,5 +400,11 @@ interface Operacion {
 
 
 9. **Formateo de campos sin valor:** Cualquier campo opcional sin dato en las consultas individuales se responde como `"Sin Valor"`.
+
+
+10. **Baja de usuario con préstamo activo:** No se podrá dar de baja a un usuario en caso de que tenga un prestamo en curso (abierto).
+
+11. **Baja de usuario**: La persona no podrá ser dada de baja de una comunidad hasta que todas sus operaciones esten cerradas y/o operaciones relacionadas con él (por ejemplo, si se presta un ejemplar a alguien y este lo presta a otra persona).
+    
 
 */
