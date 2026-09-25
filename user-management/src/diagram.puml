@@ -1,0 +1,37 @@
+@startuml
+
+class persona{
+    id
+    nombre
+    apellido
+    dni
+    fechaNacimiento
+    personaContacto
+    listaMedioContactos
+
+
+    edad()
+}
+
+class medioContacto{
+    tipo
+    valor
+    esPreferido 
+}
+
+class comunidad{
+    id
+    nombre
+    fechaCreacion
+    personas[]
+
+    altaPersona()
+    bajaPersona()
+    antiguedad()
+}
+
+persona --> medioContacto
+comunidad --> persona
+persona -> persona
+
+@enduml
