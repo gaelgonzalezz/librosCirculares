@@ -8,18 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MedioContactoModule = void 0;
 const common_1 = require("@nestjs/common");
-const medio_contacto_service_1 = require("./medio-contacto.service");
-const medio_contacto_controller_1 = require("./medio-contacto.controller");
 const persona_module_1 = require("../persona/persona.module");
+const medio_contacto_controller_1 = require("./medio-contacto.controller");
+const medio_contacto_service_1 = require("./medio-contacto.service");
 let MedioContactoModule = class MedioContactoModule {
 };
 exports.MedioContactoModule = MedioContactoModule;
 exports.MedioContactoModule = MedioContactoModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => persona_module_1.PersonaModule)],
+        imports: [persona_module_1.PersonaModule],
         controllers: [medio_contacto_controller_1.MedioContactoController],
         providers: [medio_contacto_service_1.MedioContactoService],
-        exports: [medio_contacto_service_1.MedioContactoService],
     })
 ], MedioContactoModule);
 //# sourceMappingURL=medio-contacto.module.js.map

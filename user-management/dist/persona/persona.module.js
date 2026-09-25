@@ -8,19 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PersonaModule = void 0;
 const common_1 = require("@nestjs/common");
-const persona_service_1 = require("./persona.service");
 const persona_controller_1 = require("./persona.controller");
-const medio_contacto_module_1 = require("../medio-contacto/medio-contacto.module");
-const comunidad_module_1 = require("../comunidad/comunidad.module");
+const persona_service_1 = require("./persona.service");
 let PersonaModule = class PersonaModule {
 };
 exports.PersonaModule = PersonaModule;
 exports.PersonaModule = PersonaModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            (0, common_1.forwardRef)(() => medio_contacto_module_1.MedioContactoModule),
-            (0, common_1.forwardRef)(() => comunidad_module_1.ComunidadModule),
-        ],
         controllers: [persona_controller_1.PersonaController],
         providers: [persona_service_1.PersonaService],
         exports: [persona_service_1.PersonaService],

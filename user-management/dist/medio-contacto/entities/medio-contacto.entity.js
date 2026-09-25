@@ -6,7 +6,6 @@ class MedioContacto {
     tipo;
     valor;
     esPreferido;
-    personaId;
 }
 exports.MedioContacto = MedioContacto;
 //# sourceMappingURL=medio-contacto.entity.js.map

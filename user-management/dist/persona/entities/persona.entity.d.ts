@@ -4,6 +4,7 @@ export declare class Persona {
     nombre: string;
     apellido: string;
     dni: string;
-    personaContacto?: Persona;
+    personaContacto?: number;
     listaMedioContactos: MedioContacto[];
+    comunidades: number[];
 }

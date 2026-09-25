@@ -4,21 +4,15 @@ import { Comunidad } from './entities/comunidad.entity';
 import { PersonaService } from '../persona/persona.service';
 export declare class ComunidadService {
     private readonly personaService;
-    constructor(personaService: PersonaService);
     comunidades: Comunidad[];
-    siguienteId(): number;
-    create(createComunidadDto: CreateComunidadDto): number;
+    constructor(personaService: PersonaService);
+    create(createComunidadDto: CreateComunidadDto): Comunidad;
     findAll(): Comunidad[];
     findOne(id: number): Comunidad;
-    update(id: number, updateComunidadDto: UpdateComunidadDto): void;
+    update(id: number, updateComunidadDto: UpdateComunidadDto): Comunidad;
     remove(id: number): boolean;
-    estaAfiliada(comunidad: Comunidad, personaId: number): boolean;
-    estaActiva(comunidad: Comunidad, personaId: number): boolean;
-    comunidadesDe(personaId: number): Comunidad[];
-    comunidadesActivasDe(personaId: number): Comunidad[];
-    operacionesCerradas(idPersona: number, idComunidad: number): Promise<boolean>;
-    altaPersona(idComunidad: number, idPersona: number): Promise<void>;
-    bajaPersona(idComunidad: number, idPersona: number): Promise<boolean>;
-    desactivarPersona(idComunidad: number, idPersona: number): Promise<boolean>;
-    quitarPersonaDeTodas(idPersona: number): void;
+    addPersona(id: number, personaId: number): Comunidad;
+    removePersona(id: number, personaId: number, operacionesCerradas?: boolean): Comunidad;
+    deactivatePersona(id: number, personaId: number, operacionesCerradas?: boolean): import("../persona/entities/persona.entity").Persona;
+    private nextId;
 }

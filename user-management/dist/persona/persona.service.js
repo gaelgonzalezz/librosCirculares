@@ -5,117 +5,138 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PersonaService = void 0;
 const common_1 = require("@nestjs/common");
+const medio_contacto_entity_1 = require("../medio-contacto/entities/medio-contacto.entity");
 const persona_entity_1 = require("./entities/persona.entity");
-const medio_contacto_service_1 = require("../medio-contacto/medio-contacto.service");
-const comunidad_service_1 = require("../comunidad/comunidad.service");
 let PersonaService = class PersonaService {
-    medioContactoService;
-    comunidadService;
-    constructor(medioContactoService, comunidadService) {
-        this.medioContactoService = medioContactoService;
-        this.comunidadService = comunidadService;
-    }
     personas = [];
-    siguienteId() {
-        const ids = this.personas.map((p) => p.id);
-        let id = 1;
-        while (ids.includes(id)) {
-            id++;
-        }
-        return id;
-    }
     create(createPersonaDto) {
-        if (this.personas.some((p) => p.dni == createPersonaDto.dni)) {
-            throw new common_1.ConflictException('Ya existe una persona con ese DNI');
+        if (!createPersonaDto.listaMedioContactos?.length) {
+            throw new common_1.BadRequestException('La persona debe tener al menos un medio de contacto');
         }
-        let responsable;
-        if (createPersonaDto.personaContactoId) {
-            responsable = this.findOne(createPersonaDto.personaContactoId);
+        if (this.personas.some((persona) => persona.dni === createPersonaDto.dni)) {
+            throw new common_1.ConflictException('El DNI ya existe');
         }
-        const nueva = new persona_entity_1.Persona();
-        nueva.id = this.siguienteId();
-        nueva.nombre = createPersonaDto.nombre;
-        nueva.apellido = createPersonaDto.apellido;
-        nueva.dni = createPersonaDto.dni;
-        nueva.listaMedioContactos = [];
-        this.personas.push(nueva);
-        if (responsable) {
-            nueva.personaContacto = responsable;
-            nueva.listaMedioContactos = responsable.listaMedioContactos;
-        }
-        else {
-            if (!createPersonaDto.listaMedioContactos ||
-                createPersonaDto.listaMedioContactos.length == 0) {
-                throw new common_1.BadRequestException('La persona debe crearse con al menos un medio de contacto');
-            }
-            for (const medio of createPersonaDto.listaMedioContactos) {
-                this.medioContactoService.createForPersona(nueva, medio);
-            }
-        }
-        return nueva.id;
+        const representante = createPersonaDto.personaContacto
+            ? this.findOne(createPersonaDto.personaContacto)
+            : undefined;
+        const contactos = createPersonaDto.listaMedioContactos.map((contacto) => this.createContact(contacto, representante?.id));
+        const nuevaPersona = new persona_entity_1.Persona();
+        nuevaPersona.id = this.nextId(this.personas.map((persona) => persona.id));
+        nuevaPersona.nombre = createPersonaDto.nombre;
+        nuevaPersona.apellido = createPersonaDto.apellido;
+        nuevaPersona.dni = createPersonaDto.dni;
+        nuevaPersona.personaContacto = representante?.id;
+        nuevaPersona.listaMedioContactos = contactos;
+        nuevaPersona.comunidades = [];
+        this.personas.push(nuevaPersona);
+        return nuevaPersona;
     }
     findAll() {
         return this.personas;
     }
     findOne(id) {
-        const persona = this.personas.find((p) => p.id == id);
+        const persona = this.personas.find((item) => item.id === id);
         if (!persona) {
-            throw new common_1.NotFoundException();
+            throw new common_1.NotFoundException('Persona no encontrada');
         }
         return persona;
     }
     update(id, updatePersonaDto) {
         const persona = this.findOne(id);
-        if (updatePersonaDto.dni &&
-            this.personas.some((p) => p.dni == updatePersonaDto.dni && p.id != id)) {
-            throw new common_1.ConflictException('Ya existe una persona con ese DNI');
-        }
-        if (updatePersonaDto.nombre) {
-            persona.nombre = updatePersonaDto.nombre;
-        }
-        if (updatePersonaDto.apellido) {
-            persona.apellido = updatePersonaDto.apellido;
-        }
-        if (updatePersonaDto.dni) {
+        if (updatePersonaDto.dni && updatePersonaDto.dni !== persona.dni) {
+            if (this.personas.some((item) => item.id !== id && item.dni === updatePersonaDto.dni)) {
+                throw new common_1.ConflictException('El DNI ya existe');
+            }
             persona.dni = updatePersonaDto.dni;
         }
-        if (updatePersonaDto.personaContactoId) {
-            const responsable = this.findOne(updatePersonaDto.personaContactoId);
-            if (responsable.id == persona.id) {
-                throw new common_1.BadRequestException('Una persona no puede ser su propio representante');
+        if (updatePersonaDto.nombre !== undefined)
+            persona.nombre = updatePersonaDto.nombre;
+        if (updatePersonaDto.apellido !== undefined)
+            persona.apellido = updatePersonaDto.apellido;
+        if (updatePersonaDto.personaContacto !== undefined) {
+            if (updatePersonaDto.personaContacto === id) {
+                throw new common_1.BadRequestException('Una persona no puede representarse a sí misma');
             }
-            persona.personaContacto = responsable;
-            persona.listaMedioContactos = responsable.listaMedioContactos;
+            const representante = this.findOne(updatePersonaDto.personaContacto);
+            persona.personaContacto = representante.id;
+            persona.listaMedioContactos = representante.listaMedioContactos.map((contacto) => this.createContact(contacto, representante.id, persona.id));
         }
+        if (updatePersonaDto.listaMedioContactos !== undefined) {
+            if (!updatePersonaDto.listaMedioContactos.length) {
+                throw new common_1.BadRequestException('La persona debe tener al menos un medio de contacto');
+            }
+            persona.listaMedioContactos = updatePersonaDto.listaMedioContactos.map((contacto) => this.createContact(contacto, persona.personaContacto, persona.id));
+        }
+        return persona;
     }
     remove(id) {
         this.findOne(id);
-        this.comunidadService.quitarPersonaDeTodas(id);
-        this.medioContactoService.medios = this.medioContactoService.medios.filter((m) => m.personaId != id);
-        this.personas = this.personas.filter((p) => p.id != id);
-        for (const persona of this.personas) {
-            if (persona.personaContacto?.id == id) {
-                persona.personaContacto = undefined;
-            }
-        }
+        this.personas = this.personas.filter((persona) => persona.id !== id);
         return true;
+    }
+    findContacts(id) {
+        return this.findOne(id).listaMedioContactos;
+    }
+    addContact(id, createMedioContactoDto) {
+        const persona = this.findOne(id);
+        const contacto = this.createContact(createMedioContactoDto, persona.personaContacto, id);
+        persona.listaMedioContactos.push(contacto);
+        return contacto;
+    }
+    updateContact(id, contactId, updateDto) {
+        const persona = this.findOne(id);
+        const contacto = persona.listaMedioContactos.find((item) => item.id === contactId);
+        if (!contacto) {
+            throw new common_1.NotFoundException('Medio de contacto no encontrado');
+        }
+        if (updateDto.valor !== undefined) {
+            this.assertUniqueContact(updateDto.valor, persona.personaContacto, id, contactId);
+            contacto.valor = updateDto.valor;
+        }
+        if (updateDto.tipo !== undefined)
+            contacto.tipo = updateDto.tipo;
+        if (updateDto.esPreferido !== undefined)
+            contacto.esPreferido = updateDto.esPreferido;
+        return contacto;
+    }
+    removeContact(id, contactId) {
+        const persona = this.findOne(id);
+        if (!persona.listaMedioContactos.some((contacto) => contacto.id === contactId)) {
+            throw new common_1.NotFoundException('Medio de contacto no encontrado');
+        }
+        persona.listaMedioContactos = persona.listaMedioContactos.filter((contacto) => contacto.id !== contactId);
+        return true;
+    }
+    createContact(dto, representativeId, ownerId) {
+        this.assertUniqueContact(dto.valor, representativeId, ownerId);
+        const contacto = new medio_contacto_entity_1.MedioContacto();
+        contacto.id = this.nextId(this.personas.flatMap((persona) => persona.listaMedioContactos.map((item) => item.id)));
+        contacto.tipo = dto.tipo;
+        contacto.valor = dto.valor;
+        contacto.esPreferido = dto.esPreferido ?? false;
+        return contacto;
+    }
+    assertUniqueContact(value, representativeId, ownerId, contactId) {
+        const duplicate = this.personas
+            .filter((persona) => persona.id !== ownerId)
+            .flatMap((persona) => persona.listaMedioContactos.map((contacto) => ({ persona, contacto })))
+            .find(({ contacto }) => contacto.valor === value && contacto.id !== contactId);
+        if (duplicate && duplicate.persona.id !== representativeId) {
+            throw new common_1.ConflictException('El medio de contacto ya existe');
+        }
+    }
+    nextId(ids) {
+        let id = 1;
+        while (ids.includes(id))
+            id += 1;
+        return id;
     }
 };
 exports.PersonaService = PersonaService;
 exports.PersonaService = PersonaService = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, common_1.Inject)((0, common_1.forwardRef)(() => medio_contacto_service_1.MedioContactoService))),
-    __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => comunidad_service_1.ComunidadService))),
-    __metadata("design:paramtypes", [medio_contacto_service_1.MedioContactoService,
-        comunidad_service_1.ComunidadService])
+    (0, common_1.Injectable)()
 ], PersonaService);
 //# sourceMappingURL=persona.service.js.map

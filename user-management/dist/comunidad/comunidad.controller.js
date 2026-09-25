@@ -17,13 +17,15 @@ const common_1 = require("@nestjs/common");
 const comunidad_service_1 = require("./comunidad.service");
 const create_comunidad_dto_1 = require("./dto/create-comunidad.dto");
 const update_comunidad_dto_1 = require("./dto/update-comunidad.dto");
+const afiliar_persona_dto_1 = require("./dto/afiliar-persona.dto");
+const baja_persona_dto_1 = require("./dto/baja-persona.dto");
 let ComunidadController = class ComunidadController {
     comunidadService;
     constructor(comunidadService) {
         this.comunidadService = comunidadService;
     }
-    create(createComunidadDto) {
-        return this.comunidadService.create(createComunidadDto);
+    create(dto) {
+        return this.comunidadService.create(dto);
     }
     findAll() {
         return this.comunidadService.findAll();
@@ -31,20 +33,20 @@ let ComunidadController = class ComunidadController {
     findOne(id) {
         return this.comunidadService.findOne(+id);
     }
-    update(id, updateComunidadDto) {
-        return this.comunidadService.update(+id, updateComunidadDto);
+    update(id, dto) {
+        return this.comunidadService.update(+id, dto);
     }
     remove(id) {
         return this.comunidadService.remove(+id);
     }
-    altaPersona(id, personaId) {
-        return this.comunidadService.altaPersona(+id, +personaId);
+    addPersona(id, dto) {
+        return this.comunidadService.addPersona(+id, dto.personaId);
     }
-    desactivarPersona(id, personaId) {
-        return this.comunidadService.desactivarPersona(+id, +personaId);
+    removePersona(id, personaId, dto) {
+        return this.comunidadService.removePersona(+id, +personaId, dto.operacionesCerradas);
     }
-    bajaPersona(id, personaId) {
-        return this.comunidadService.bajaPersona(+id, +personaId);
+    deactivatePersona(id, personaId, dto) {
+        return this.comunidadService.deactivatePersona(+id, +personaId, dto.operacionesCerradas);
     }
 };
 exports.ComunidadController = ComunidadController;
@@ -84,29 +86,31 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ComunidadController.prototype, "remove", null);
 __decorate([
-    (0, common_1.Post)(':id/personas/:personaId'),
+    (0, common_1.Post)(':id/persona'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Param)('personaId')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, afiliar_persona_dto_1.AfiliarPersonaDto]),
     __metadata("design:returntype", void 0)
-], ComunidadController.prototype, "altaPersona", null);
+], ComunidadController.prototype, "addPersona", null);
 __decorate([
-    (0, common_1.Patch)(':id/personas/:personaId/desactivar'),
+    (0, common_1.Delete)(':id/persona/:personaId'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Param)('personaId')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, baja_persona_dto_1.BajaPersonaDto]),
     __metadata("design:returntype", void 0)
-], ComunidadController.prototype, "desactivarPersona", null);
+], ComunidadController.prototype, "removePersona", null);
 __decorate([
-    (0, common_1.Delete)(':id/personas/:personaId'),
+    (0, common_1.Patch)(':id/persona/:personaId/inactivar'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Param)('personaId')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, baja_persona_dto_1.BajaPersonaDto]),
     __metadata("design:returntype", void 0)
-], ComunidadController.prototype, "bajaPersona", null);
+], ComunidadController.prototype, "deactivatePersona", null);
 exports.ComunidadController = ComunidadController = __decorate([
     (0, common_1.Controller)('comunidad'),
     __metadata("design:paramtypes", [comunidad_service_1.ComunidadService])

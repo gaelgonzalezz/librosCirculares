@@ -8,15 +8,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ComunidadModule = void 0;
 const common_1 = require("@nestjs/common");
-const comunidad_service_1 = require("./comunidad.service");
 const comunidad_controller_1 = require("./comunidad.controller");
+const comunidad_service_1 = require("./comunidad.service");
 const persona_module_1 = require("../persona/persona.module");
 let ComunidadModule = class ComunidadModule {
 };
 exports.ComunidadModule = ComunidadModule;
 exports.ComunidadModule = ComunidadModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => persona_module_1.PersonaModule)],
+        imports: [persona_module_1.PersonaModule],
         controllers: [comunidad_controller_1.ComunidadController],
         providers: [comunidad_service_1.ComunidadService],
         exports: [comunidad_service_1.ComunidadService],

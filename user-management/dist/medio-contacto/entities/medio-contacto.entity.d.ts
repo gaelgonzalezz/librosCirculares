@@ -3,5 +3,4 @@ export declare class MedioContacto {
     tipo: string;
     valor: string;
     esPreferido: boolean;
-    personaId: number;
 }

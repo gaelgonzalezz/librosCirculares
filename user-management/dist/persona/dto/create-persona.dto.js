@@ -5,7 +5,7 @@ class CreatePersonaDto {
     nombre;
     apellido;
     dni;
-    personaContactoId;
+    personaContacto;
     listaMedioContactos;
 }
 exports.CreatePersonaDto = CreatePersonaDto;

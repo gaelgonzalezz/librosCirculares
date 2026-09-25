@@ -8,6 +8,7 @@ class Persona {
     dni;
     personaContacto;
     listaMedioContactos;
+    comunidades;
 }
 exports.Persona = Persona;
 //# sourceMappingURL=persona.entity.js.map

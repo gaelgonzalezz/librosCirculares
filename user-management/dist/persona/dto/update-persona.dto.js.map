@@ -1,1 +1,1 @@
-{"version":3,"file":"update-persona.dto.js","sourceRoot":"","sources":["../../../src/persona/dto/update-persona.dto.ts"],"names":[],"mappings":";;;AAAA,MAAa,gBAAgB;IAC3B,MAAM,CAAU;IAChB,QAAQ,CAAU;IAClB,GAAG,CAAU;IACb,iBAAiB,CAAU;CAC5B;AALD,4CAKC"}
+{"version":3,"file":"update-persona.dto.js","sourceRoot":"","sources":["../../../src/persona/dto/update-persona.dto.ts"],"names":[],"mappings":";;;AAEA,MAAa,gBAAgB;IAC5B,MAAM,CAAU;IAChB,QAAQ,CAAU;IAClB,GAAG,CAAU;IACb,eAAe,CAAU;IACzB,mBAAmB,CAA4B;CAC/C;AAND,4CAMC"}

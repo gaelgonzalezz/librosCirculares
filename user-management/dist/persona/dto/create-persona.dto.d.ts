@@ -1,11 +1,8 @@
+import { CreateMedioContactoDto } from '../../medio-contacto/dto/create-medio-contacto.dto';
 export declare class CreatePersonaDto {
     nombre: string;
     apellido: string;
     dni: string;
-    personaContactoId?: number;
-    listaMedioContactos?: {
-        tipo: string;
-        valor: string;
-        esPreferido: boolean;
-    }[];
+    personaContacto?: number;
+    listaMedioContactos: CreateMedioContactoDto[];
 }

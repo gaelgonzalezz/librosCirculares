@@ -14,16 +14,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MedioContactoController = void 0;
 const common_1 = require("@nestjs/common");
-const medio_contacto_service_1 = require("./medio-contacto.service");
 const create_medio_contacto_dto_1 = require("./dto/create-medio-contacto.dto");
 const update_medio_contacto_dto_1 = require("./dto/update-medio-contacto.dto");
+const medio_contacto_service_1 = require("./medio-contacto.service");
 let MedioContactoController = class MedioContactoController {
     medioContactoService;
     constructor(medioContactoService) {
         this.medioContactoService = medioContactoService;
     }
-    create(createMedioContactoDto) {
-        return this.medioContactoService.create(createMedioContactoDto);
+    create(dto) {
+        return this.medioContactoService.create(dto);
     }
     findAll() {
         return this.medioContactoService.findAll();
@@ -31,8 +31,8 @@ let MedioContactoController = class MedioContactoController {
     findOne(id) {
         return this.medioContactoService.findOne(+id);
     }
-    update(id, updateMedioContactoDto) {
-        return this.medioContactoService.update(+id, updateMedioContactoDto);
+    update(id, dto) {
+        return this.medioContactoService.update(+id, dto);
     }
     remove(id) {
         return this.medioContactoService.remove(+id);
@@ -75,7 +75,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], MedioContactoController.prototype, "remove", null);
 exports.MedioContactoController = MedioContactoController = __decorate([
-    (0, common_1.Controller)('medio-contacto'),
+    (0, common_1.Controller)('medioContacto'),
     __metadata("design:paramtypes", [medio_contacto_service_1.MedioContactoService])
 ], MedioContactoController);
 //# sourceMappingURL=medio-contacto.controller.js.map

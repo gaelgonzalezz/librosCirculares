@@ -5,7 +5,8 @@ class UpdatePersonaDto {
     nombre;
     apellido;
     dni;
-    personaContactoId;
+    personaContacto;
+    listaMedioContactos;
 }
 exports.UpdatePersonaDto = UpdatePersonaDto;
 //# sourceMappingURL=update-persona.dto.js.map

@@ -5,7 +5,7 @@ class Comunidad {
     id;
     nombre;
     personas;
-    idsPersonasInactivas;
+    personasInactivas;
 }
 exports.Comunidad = Comunidad;
 //# sourceMappingURL=comunidad.entity.js.map

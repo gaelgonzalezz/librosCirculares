@@ -1,6 +1,6 @@
 export declare class CreateMedioContactoDto {
+    personaId?: number;
     tipo: string;
     valor: string;
-    esPreferido: boolean;
-    personaId: number;
+    esPreferido?: boolean;
 }
