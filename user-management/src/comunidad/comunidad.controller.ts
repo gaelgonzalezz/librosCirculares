@@ -39,6 +39,11 @@ export class ComunidadController {
     return this.comunidadService.addPersona(+id, dto.personaId);
   }
 
+  @Patch(':id/persona/:personaId/alta')
+  reactivatePersona(@Param('id') id: string, @Param('personaId') personaId: string) {
+    return this.comunidadService.reactivatePersona(+id, +personaId);
+  }
+
   @Delete(':id/persona/:personaId')
   removePersona(
     @Param('id') id: string,

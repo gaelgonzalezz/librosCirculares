@@ -94,6 +94,38 @@ export class ComunidadService {
     return comunidad;
   }
 
+  reactivatePersona(id: number, personaId: number) {
+    const comunidad = this.findOne(id);
+    const persona = this.personaService.findOne(personaId);
+
+    if (comunidad.personas.includes(personaId)) {
+      return comunidad;
+    }
+
+    if (!comunidad.personasInactivas.includes(personaId)) {
+      throw new NotFoundException('La persona no está dada de baja/inactiva en la comunidad');
+    }
+
+    const comunidadesActivas = persona.comunidades.filter((comunidadId) =>
+      this.findOne(comunidadId).personas.includes(personaId),
+    );
+
+    if (comunidadesActivas.length >= 3) {
+      throw new BadRequestException(
+        'La persona ya está activa en 3 comunidades. Debe inactivarse en otra antes de darla de alta aquí.',
+      );
+    }
+
+    comunidad.personasInactivas = comunidad.personasInactivas.filter((item) => item !== personaId);
+    comunidad.personas.push(personaId);
+
+    if (!persona.comunidades.includes(id)) {
+      persona.comunidades.push(id);
+    }
+
+    return comunidad;
+  }
+
   removePersona(id: number, personaId: number, operacionesCerradas = true) {
     const comunidad = this.findOne(id);
     const persona = this.personaService.findOne(personaId);
