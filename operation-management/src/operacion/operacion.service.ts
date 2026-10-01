@@ -4,6 +4,8 @@ import { CreateDevolucionDto } from './dto/create-devolucion.dto';
 import { CreateCesionDto } from './dto/create-cesion.dto';
 import { CreateBajaDto } from './dto/create-baja.dto';
 import { EstadoOperacion, Operacion, TipoOperacion } from './entities/operacion.entity';
+import { CopyManagementClient, CopyRecord } from './clients/copy-management.client';
+import { UserManagementClient } from './clients/user-management.client';
 
 type PersonaOperacionesAbiertasResponse = {
   personaId: number;
@@ -18,18 +20,30 @@ export class OperacionService {
   private operaciones: Operacion[] = [];
   private nextId = 1;
 
-  registrarPrestamo(dto: CreatePrestamoDto) {
-    if (
-      !dto.ejemplarId ||
-      !dto.comunidadId ||
-      !dto.personaPrestamistaId ||
-      !dto.personaReceptoraId
-    ) {
-      throw new BadRequestException('Faltan datos requeridos para registrar el préstamo');
-    }
+  constructor(
+    private readonly copyManagementClient: CopyManagementClient,
+    private readonly userManagementClient: UserManagementClient,
+  ) {}
+
+  async registrarPrestamo(dto: CreatePrestamoDto) {
+    this.assertPositiveIds(
+      [dto.ejemplarId, dto.comunidadId, dto.personaPrestamistaId, dto.personaReceptoraId],
+      'Faltan datos requeridos para registrar el préstamo',
+    );
 
     if (dto.personaPrestamistaId === dto.personaReceptoraId) {
       throw new BadRequestException('El prestatario es la misma persona');
+    }
+
+    const copy = await this.copyManagementClient.findCopy(dto.ejemplarId);
+    this.assertCopyActive(copy);
+    await this.userManagementClient.assertActiveCommunityMembers(
+      [dto.personaPrestamistaId, dto.personaReceptoraId],
+      dto.comunidadId,
+    );
+
+    if (copy.inPosessionId !== dto.personaPrestamistaId) {
+      throw new ConflictException('Quien presta no tiene el ejemplar en su poder actualmente');
     }
 
     const prestamoAbierto = this.operaciones.find(
@@ -39,8 +53,21 @@ export class OperacionService {
         op.estado === 'ABIERTA',
     );
 
+    if (
+      prestamoAbierto &&
+      (prestamoAbierto.personaDestinoId !== dto.personaPrestamistaId ||
+        prestamoAbierto.comunidadId !== dto.comunidadId)
+    ) {
+      throw new ConflictException('El ejemplar ya tiene un préstamo abierto incompatible');
+    }
+
+    await this.copyManagementClient.updateCopy(dto.ejemplarId, {
+      inPosessionId: dto.personaReceptoraId,
+    });
+
     if (prestamoAbierto) {
-      throw new ConflictException('El ejemplar ya tiene un préstamo abierto');
+      prestamoAbierto.estado = 'CERRADA';
+      prestamoAbierto.fechaFin = new Date().toISOString();
     }
 
     const nuevaOperacion: Operacion = {
@@ -62,10 +89,14 @@ export class OperacionService {
     };
   }
 
-  registrarDevolucion(dto: CreateDevolucionDto) {
-    if (!dto.ejemplarId || !dto.comunidadId) {
-      throw new BadRequestException('Faltan datos requeridos para registrar la devolución');
-    }
+  async registrarDevolucion(dto: CreateDevolucionDto) {
+    this.assertPositiveIds(
+      [dto.ejemplarId, dto.comunidadId],
+      'Faltan datos requeridos para registrar la devolución',
+    );
+
+    const copy = await this.copyManagementClient.findCopy(dto.ejemplarId);
+    this.assertCopyActive(copy);
 
     const prestamoAbierto = this.operaciones.find(
       (op) =>
@@ -76,11 +107,22 @@ export class OperacionService {
     );
 
     if (!prestamoAbierto) {
-      throw new NotFoundException('No existe un préstamo activo para ese ejemplar');
+      throw new ConflictException('No existe un préstamo activo para ese ejemplar');
+    }
+    if (prestamoAbierto.comunidadId !== dto.comunidadId) {
+      throw new BadRequestException('El préstamo pertenece a otra comunidad');
+    }
+    if (copy.inPosessionId !== prestamoAbierto.personaDestinoId) {
+      throw new ConflictException('La posesión actual no coincide con el préstamo abierto');
     }
 
+    const fechaFin = new Date().toISOString();
+    await this.copyManagementClient.updateCopy(dto.ejemplarId, {
+      inPosessionId: copy.ownerId,
+    });
+
     prestamoAbierto.estado = 'CERRADA';
-    prestamoAbierto.fechaFin = new Date().toISOString();
+    prestamoAbierto.fechaFin = fechaFin;
 
     const devolucion: Operacion = {
       id: this.nextId++,
@@ -89,8 +131,8 @@ export class OperacionService {
       comunidadId: dto.comunidadId,
       personaOrigenId: prestamoAbierto.personaDestinoId ?? prestamoAbierto.personaOrigenId,
       personaDestinoId: prestamoAbierto.personaOrigenId,
-      fechaInicio: new Date().toISOString(),
-      fechaFin: new Date().toISOString(),
+      fechaInicio: fechaFin,
+      fechaFin,
       estado: 'CERRADA',
     };
 
@@ -102,19 +144,30 @@ export class OperacionService {
     };
   }
 
-  registrarCesion(dto: CreateCesionDto) {
-    if (
-      !dto.ejemplarId ||
-      !dto.comunidadId ||
-      !dto.duenoActualId ||
-      !dto.nuevoDuenoId
-    ) {
-      throw new BadRequestException('Faltan datos requeridos para registrar la cesión');
-    }
+  async registrarCesion(dto: CreateCesionDto) {
+    this.assertPositiveIds(
+      [dto.ejemplarId, dto.comunidadId, dto.duenoActualId, dto.nuevoDuenoId],
+      'Faltan datos requeridos para registrar la cesión',
+    );
 
     if (dto.duenoActualId === dto.nuevoDuenoId) {
       throw new BadRequestException('El nuevo dueño es igual al actual');
     }
+
+    const copy = await this.copyManagementClient.findCopy(dto.ejemplarId);
+    this.assertCopyActive(copy);
+    await this.userManagementClient.assertActiveCommunityMembers(
+      [dto.duenoActualId, dto.nuevoDuenoId],
+      dto.comunidadId,
+    );
+    if (copy.ownerId !== dto.duenoActualId) {
+      throw new ConflictException('Quien solicita la cesión no es el propietario actual');
+    }
+
+    const fecha = new Date().toISOString();
+    await this.copyManagementClient.updateCopy(dto.ejemplarId, {
+      ownerId: dto.nuevoDuenoId,
+    });
 
     const nuevaOperacion: Operacion = {
       id: this.nextId++,
@@ -123,7 +176,8 @@ export class OperacionService {
       comunidadId: dto.comunidadId,
       personaOrigenId: dto.duenoActualId,
       personaDestinoId: dto.nuevoDuenoId,
-      fechaInicio: new Date().toISOString(),
+      fechaInicio: fecha,
+      fechaFin: fecha,
       estado: 'CERRADA',
     };
 
@@ -135,9 +189,20 @@ export class OperacionService {
     };
   }
 
-  registrarBaja(dto: CreateBajaDto) {
-    if (!dto.ejemplarId || !dto.comunidadId || !dto.propietarioId) {
-      throw new BadRequestException('Faltan datos requeridos para registrar la baja');
+  async registrarBaja(dto: CreateBajaDto) {
+    this.assertPositiveIds(
+      [dto.ejemplarId, dto.comunidadId, dto.propietarioId],
+      'Faltan datos requeridos para registrar la baja',
+    );
+
+    const copy = await this.copyManagementClient.findCopy(dto.ejemplarId);
+    this.assertCopyActive(copy);
+    await this.userManagementClient.assertActiveCommunityMembers(
+      [dto.propietarioId],
+      dto.comunidadId,
+    );
+    if (copy.ownerId !== dto.propietarioId) {
+      throw new ConflictException('Quien solicita la baja no es el propietario actual');
     }
 
     const prestamoAbierto = this.operaciones.find(
@@ -151,14 +216,17 @@ export class OperacionService {
       throw new ConflictException('El ejemplar tiene un préstamo abierto; debe devolverse antes de darlo de baja');
     }
 
+    const fecha = new Date().toISOString();
+    await this.copyManagementClient.updateCopy(dto.ejemplarId, { active: false });
+
     const baja: Operacion = {
       id: this.nextId++,
       tipo: 'BAJA',
       ejemplarId: dto.ejemplarId,
       comunidadId: dto.comunidadId,
       personaOrigenId: dto.propietarioId,
-      fechaInicio: new Date().toISOString(),
-      fechaFin: new Date().toISOString(),
+      fechaInicio: fecha,
+      fechaFin: fecha,
       estado: 'CERRADA',
       motivo: dto.motivo,
     };
@@ -196,11 +264,19 @@ export class OperacionService {
       throw new NotFoundException(`Operación con id ${id} no encontrada`);
     }
 
-    return operacion;
+    return {
+      ...operacion,
+      personaDestinoId: operacion.personaDestinoId ?? 'Sin Valor',
+      fechaFin: operacion.fechaFin ?? 'Sin Valor',
+      motivo: operacion.motivo ?? 'Sin Valor',
+    };
   }
 
   consultarPersona(id: number, comunidadId: number): PersonaOperacionesAbiertasResponse {
-    if (!comunidadId) {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new BadRequestException('El id de persona debe ser un entero positivo');
+    }
+    if (!Number.isInteger(comunidadId) || comunidadId <= 0) {
       throw new BadRequestException('Falta el parámetro idComunidad');
     }
 
@@ -225,5 +301,17 @@ export class OperacionService {
       operacionesAbiertas: abiertas,
       totalCerradas: totalCerradas,
     };
+  }
+
+  private assertPositiveIds(ids: number[], message: string): void {
+    if (ids.some((id) => !Number.isInteger(id) || id <= 0)) {
+      throw new BadRequestException(message);
+    }
+  }
+
+  private assertCopyActive(copy: CopyRecord): void {
+    if (copy.active === false) {
+      throw new ConflictException('El ejemplar está dado de baja');
+    }
   }
 }

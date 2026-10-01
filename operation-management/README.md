@@ -25,6 +25,20 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Configuración de servicios
+
+`operation-management` se comunica por HTTP con `copy-management` y `user-management`.
+Las URLs se pueden configurar con estas variables de entorno:
+
+| Variable | Valor predeterminado |
+| --- | --- |
+| `COPY_MANAGEMENT_URL` | `http://localhost:3001` |
+| `USER_MANAGEMENT_URL` | `http://localhost:3002` |
+
+El servicio de ejemplares debe exponer `GET /copy/:id` y `PATCH /copy/:id`.
+El servicio de usuarios debe exponer `GET /persona/:id` y `GET /comunidad/:id`.
+Configura los puertos de cada aplicación de forma que coincidan con estas URLs.
+
 ## Project setup
 
 ```bash

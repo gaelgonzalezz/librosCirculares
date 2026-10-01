@@ -17,8 +17,9 @@ export class CopyService {
         
     newCopy.id = Math.random();
     newCopy.edition = edition;
-    newCopy.ownerId = Math.random();
-    newCopy.inPosessionId = Math.random();
+    newCopy.ownerId = createCopyDto.ownerId;
+    newCopy.inPosessionId = createCopyDto.inPosessionId;
+    newCopy.active = createCopyDto.active ?? true;
     
     this.copies.push(newCopy);
         
@@ -53,6 +54,12 @@ export class CopyService {
     if(updateCopyDto.inPosessionId){
       copies.inPosessionId = updateCopyDto.inPosessionId;
     }
+
+    if(updateCopyDto.active !== undefined){
+      copies.active = updateCopyDto.active;
+    }
+
+    return copies;
 
   }
   

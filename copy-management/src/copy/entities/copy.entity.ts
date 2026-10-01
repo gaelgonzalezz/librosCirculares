@@ -5,4 +5,5 @@ export class Copy {
   edition: Edition;
   ownerId: number;
   inPosessionId: number;
+  active: boolean;
 }

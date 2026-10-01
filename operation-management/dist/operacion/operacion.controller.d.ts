@@ -6,22 +6,22 @@ import { CreateBajaDto } from './dto/create-baja.dto';
 export declare class OperacionController {
     private readonly operacionService;
     constructor(operacionService: OperacionService);
-    createPrestamo(dto: CreatePrestamoDto): {
+    createPrestamo(dto: CreatePrestamoDto): Promise<{
         id: number;
         mensaje: string;
-    };
-    createDevolucion(dto: CreateDevolucionDto): {
+    }>;
+    createDevolucion(dto: CreateDevolucionDto): Promise<{
         id: number;
         mensaje: string;
-    };
-    createCesion(dto: CreateCesionDto): {
+    }>;
+    createCesion(dto: CreateCesionDto): Promise<{
         id: number;
         mensaje: string;
-    };
-    createBaja(dto: CreateBajaDto): {
+    }>;
+    createBaja(dto: CreateBajaDto): Promise<{
         id: number;
         mensaje: string;
-    };
+    }>;
     findAll(ejemplarId?: string, personaId?: string, tipo?: string, estado?: string): import("./entities/operacion.entity").Operacion[];
     findOne(id: string): import("./entities/operacion.entity").Operacion;
     consultarPersonas(id: string, idComunidad?: string): {

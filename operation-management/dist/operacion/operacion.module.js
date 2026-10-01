@@ -10,13 +10,14 @@ exports.OperacionModule = void 0;
 const common_1 = require("@nestjs/common");
 const operacion_controller_1 = require("./operacion.controller");
 const operacion_service_1 = require("./operacion.service");
+const servicio_clients_service_1 = require("./servicio-clients.service");
 let OperacionModule = class OperacionModule {
 };
 exports.OperacionModule = OperacionModule;
 exports.OperacionModule = OperacionModule = __decorate([
     (0, common_1.Module)({
         controllers: [operacion_controller_1.OperacionController],
-        providers: [operacion_service_1.OperacionService],
+        providers: [operacion_service_1.OperacionService, servicio_clients_service_1.ServicioClientsService],
     })
 ], OperacionModule);
 //# sourceMappingURL=operacion.module.js.map
